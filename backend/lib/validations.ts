@@ -1,6 +1,5 @@
 import { z } from "zod";
 import mongoose from "mongoose";
-import { group } from "console";
 
 const registerSchema = z.object({
   name: z

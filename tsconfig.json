@@ -44,7 +44,6 @@
   "include": ["backend/**/*"],
   "exclude": [
     "node_modules",
-    "dist",
     "frontend",
     "**/*.test.ts",
     "**/*.spec.ts"

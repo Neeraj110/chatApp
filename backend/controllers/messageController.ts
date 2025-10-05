@@ -1,19 +1,19 @@
-import User, { IUser } from "@/models/User";
-import Conversation, { IConversation } from "@/models/Conversation";
-import Message, { IMessage } from "@/models/Message";
+import User, { IUser } from "../models/User";
+import Conversation, { IConversation } from "../models/Conversation";
+import Message, { IMessage } from "../models/Message";
 import { Request, Response } from "express";
-import { asyncHandler } from "@/lib/asyncHandler";
+import { asyncHandler } from "../lib/asyncHandler";
 import { z } from "zod";
-import { uploadOnCloudinary, deleteOnCloudinary } from "@/lib/uploadMedia";
+import { uploadOnCloudinary, deleteOnCloudinary } from "../lib/uploadMedia";
 import {
   sendMessageSchema,
   createGroupSchema,
   addGroupMembersSchema,
   removeGroupMembersSchema,
   updateGroupSchema,
-} from "@/lib/validations";
+} from "../lib/validations";
 import mongoose, { isValidObjectId } from "mongoose";
-import { io } from "@/index";
+import { io } from "../index";
 
 interface AuthenticatedRequest extends Request {
   user?: IUser | null;

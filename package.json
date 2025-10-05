@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    "dev": "nodemon",
-    "start": "node backend/index.ts",
-    "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend"
+    "dev": "nodemon --exec ts-node -r tsconfig-paths/register backend/index.ts",
+    "build": "tsc && npm install --prefix frontend && npm run build --prefix frontend",
+    "start": "node -r tsconfig-paths/register dist/index.js",
+    "clean": "rimraf dist"
   },
   "keywords": [],
   "author": "",

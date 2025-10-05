@@ -1,15 +1,15 @@
-import User, { IUser } from "@/models/User";
+import User, { IUser } from "../models/User";
 import { Request, Response } from "express";
-import { asyncHandler } from "@/lib/asyncHandler";
+import { asyncHandler } from "../lib/asyncHandler";
 import { z } from "zod";
 import {
   registerSchema,
   loginSchema,
   updateProfileSchema,
-} from "@/lib/validations";
-import { uploadOnCloudinary, deleteOnCloudinary } from "@/lib/uploadMedia";
+} from "../lib/validations";
+import { uploadOnCloudinary, deleteOnCloudinary } from "../lib/uploadMedia";
 import axios from "axios";
-import { oauth2Client } from "@/lib/googleClient";
+import { oauth2Client } from "../lib/googleClient";
 
 interface AuthenticatedRequest extends Request {
   user?: IUser | null;

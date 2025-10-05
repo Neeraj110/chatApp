@@ -9,9 +9,9 @@ import {
   startConversation,
   getConversations,
   deleteConversation,
-} from "@/controllers/messageController";
-import { authenticate } from "@/middlewares/authMiddleware";
-import { uploadGroupAvatar, uploadSingleChat } from "@/middlewares/multer";
+} from"../controllers/messageController";
+import { authenticate } from "../middlewares/authMiddleware";
+import { uploadGroupAvatar, uploadSingleChat } from "../middlewares/multer";
 
 const router = Router();
 router.use(authenticate);

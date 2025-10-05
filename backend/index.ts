@@ -15,11 +15,15 @@ import messageRoutes from "./routes/messageRoutes";
 
 dotenv.config();
 
+console.log(`Environment: ${process.env.NODE_ENV}`);
+
 const app: Express = express();
 const server = http.createServer(app);
 
+// ✅ Connect MongoDB
 connectDb();
 
+// ✅ Socket.io setup
 const io = new Server(server, {
   cors: {
     origin: process.env.CLIENT_URL || "http://localhost:3000",
@@ -29,8 +33,11 @@ const io = new Server(server, {
   maxHttpBufferSize: 100 * 1024 * 1024, // 100MB
 });
 
+// ✅ Middlewares
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
+} else {
+  app.use(morgan("common"));
 }
 app.use(helmet());
 app.use(compression());
@@ -46,15 +53,15 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cookieParser());
 
+// ✅ Rate limiter
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   message: "Too many requests from this IP, please try again later.",
-  standardHeaders: true,
-  legacyHeaders: false,
 });
 app.use("/api/", limiter);
 
+// ✅ Health check route
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({
     success: true,
@@ -64,9 +71,11 @@ app.get("/health", (req: Request, res: Response) => {
   });
 });
 
+// ✅ API Routes
 app.use("/api/users", userRoutes);
 app.use("/api/messages", messageRoutes);
 
+// ✅ Socket connections
 const connectedUsers: Map<string, Socket> = new Map();
 
 io.on("connection", (socket: Socket) => {
@@ -100,28 +109,18 @@ io.on("connection", (socket: Socket) => {
   });
 });
 
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error("Error:", err);
-
-  const statusCode = err.statusCode || 500;
-  const message = err.message || "Something went wrong!";
-
-  res.status(statusCode).json({
-    success: false,
-    message,
-    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
-  });
-});
-
+// ✅ Static Frontend Serve
 const __dirname1 = path.resolve();
 
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname1, "/frontend/dist")));
+  const frontendPath = path.join(__dirname1, "../frontend/dist");
+  app.use(express.static(frontendPath));
 
-  app.get("*", (req: Request, res: Response) =>
-    res.sendFile(path.resolve(__dirname1, "frontend", "dist", "index.html"))
-  );
-} else if (process.env.NODE_ENV === "development") {
+  // 🔥 FIX: path-to-regexp error avoid karne ke liye "/*" -> "*"
+  app.get("*", (req: Request, res: Response) => {
+    res.sendFile(path.join(frontendPath, "index.html"));
+  });
+} else {
   app.get("/", (req: Request, res: Response) => {
     res.json({
       success: true,
@@ -131,11 +130,17 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-const PORT = process.env.PORT || 5000;
+// ✅ Global Error Handler
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error("Unhandled error:", err.message);
+  res.status(500).json({ success: false, message: "Internal Server Error" });
+});
 
+// ✅ Server start
+const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`📱 Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log(`🔗 API URL: http://localhost:${PORT}`);
+  console.log(`📱 Environment: ${process.env.NODE_ENV}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
 
 export { io, app, server };

@@ -9,9 +9,9 @@ import {
   logoutUser,
   googleLogin,
   fetchAllUsers,
-} from "@/controllers/userController";
-import { authenticate } from "@/middlewares/authMiddleware";
-import { uploadUserAvatar } from "@/middlewares/multer";
+} from "../controllers/userController";
+import { authenticate } from "../middlewares/authMiddleware";
+import { uploadUserAvatar } from "../middlewares/multer";
 
 const router = express.Router();
 
