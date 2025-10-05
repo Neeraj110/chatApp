@@ -1,0 +1,17 @@
+{
+  "watch": ["backend"],
+  "ext": "ts,js,json",
+  "ignore": [
+    "backend/**/*.test.ts",
+    "backend/**/*.spec.ts",
+    "node_modules",
+    "dist",
+    "frontend"
+  ],
+  "exec": "ts-node -r tsconfig-paths/register backend/index.ts",
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "delay": 1000,
+  "verbose": false
+}
