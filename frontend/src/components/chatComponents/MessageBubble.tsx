@@ -106,13 +106,6 @@ const MessageBubble = memo(({ message, currentUserId }: MessageBubbleProps) => {
                     >
                         {formatDate(message.createdAt)}
                     </p>
-                    {/* {isOwn && message.status && (
-                        <span className="text-xs opacity-70">
-                            {message.status === "sent" && "✓"}
-                            {message.status === "delivered" && "✓✓"}
-                            {message.status === "read" && "✓✓"}
-                        </span>
-                    )} */}
                 </div>
             </div>
         </div>

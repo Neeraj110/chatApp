@@ -5,7 +5,6 @@ import dotenv from "dotenv";
 import { Server, Socket } from "socket.io";
 import path from "path";
 import rateLimit from "express-rate-limit";
-import helmet from "helmet";
 import compression from "compression";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
@@ -39,7 +38,6 @@ if (process.env.NODE_ENV === "development") {
 } else {
   app.use(morgan("common"));
 }
-app.use(helmet());
 app.use(compression());
 app.use(
   cors({
@@ -113,11 +111,9 @@ io.on("connection", (socket: Socket) => {
 const __dirname1 = path.resolve();
 
 if (process.env.NODE_ENV === "production") {
-  const frontendPath = path.join(__dirname1, "../frontend/dist");
+  const frontendPath = path.join(__dirname1, "./frontend/dist");
   app.use(express.static(frontendPath));
-
-  // 🔥 FIX: path-to-regexp error avoid karne ke liye "/*" -> "*"
-  app.get("*", (req: Request, res: Response) => {
+  app.get(/.*/, (req: Request, res: Response) => {
     res.sendFile(path.join(frontendPath, "index.html"));
   });
 } else {
@@ -130,13 +126,11 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-// ✅ Global Error Handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error("Unhandled error:", err.message);
   res.status(500).json({ success: false, message: "Internal Server Error" });
 });
 
-// ✅ Server start
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`📱 Environment: ${process.env.NODE_ENV}`);
