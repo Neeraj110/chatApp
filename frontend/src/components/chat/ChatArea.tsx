@@ -124,7 +124,7 @@ export function ChatArea({ onChange }: ChatAreaProps) {
                 onBack={onChange}
             />
             <div
-                className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
+                className="flex-1 overflow-y-auto p-2 sm:p-3 space-y-1.5 sm:space-y-2.5 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
                 ref={messagesContainerRef}
             >
                 {isLoading ? (

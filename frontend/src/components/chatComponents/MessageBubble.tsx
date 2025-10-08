@@ -3,8 +3,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/types/types";
 
-
-
 interface MessageBubbleProps {
     message: Message;
     currentUserId: string;
@@ -27,13 +25,9 @@ const formatDate = (date: string): string => {
 const MessageBubble = memo(({ message, currentUserId }: MessageBubbleProps) => {
     const isOwn = message.sender._id === currentUserId;
 
-
-
-
-
     const renderMessageContent = () => {
         if (message.content) {
-            return <p className="text-sm leading-relaxed break-words">{message.content}</p>;
+            return <p className="text-xs sm:text-sm leading-snug break-words">{message.content}</p>;
         }
         else if (message.fileId) {
             const isVideo = message.fileId.endsWith(".mp4") || message.fileId.endsWith(".webm");
@@ -43,7 +37,7 @@ const MessageBubble = memo(({ message, currentUserId }: MessageBubbleProps) => {
                         src={message.fileId}
                         controls
                         className="max-w-full h-auto rounded-lg"
-                        style={{ maxHeight: "200px" }}
+                        style={{ maxHeight: "150px" }}
                     >
                         Your browser does not support the video tag.
                     </video>
@@ -54,29 +48,28 @@ const MessageBubble = memo(({ message, currentUserId }: MessageBubbleProps) => {
                         src={message.fileId}
                         alt="Shared media"
                         className="max-w-full h-auto rounded-lg"
-                        style={{ maxHeight: "200px" }}
+                        style={{ maxHeight: "150px" }}
                     />
                 );
             }
         }
         else {
-            return <p className="text-sm text-muted-foreground">Unsupported message type</p>;
+            return <p className="text-xs sm:text-sm text-muted-foreground">Unsupported message type</p>;
         }
     };
-
 
     return (
         <div
             className={cn(
-                "flex gap-2 sm:gap-3 max-w-[85%] sm:max-w-[80%] lg:max-w-[70%]",
+                "flex gap-1.5 sm:gap-2 max-w-[85%] sm:max-w-[80%] lg:max-w-[70%]",
                 isOwn ? "ml-auto flex-row-reverse" : "mr-auto"
             )}
             aria-live="polite"
         >
             {!isOwn && (
-                <Avatar className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0">
+                <Avatar className="h-5 w-5 sm:h-7 sm:w-7 flex-shrink-0 mt-0.5">
                     <AvatarImage src={message.sender.avatar} alt={message.sender.name} />
-                    <AvatarFallback className="bg-gradient-primary text-primary-foreground text-xs">
+                    <AvatarFallback className="bg-gradient-primary text-primary-foreground text-[10px] sm:text-xs">
                         {message.sender.name
                             .split(" ")
                             .map((n) => n[0])
@@ -87,20 +80,20 @@ const MessageBubble = memo(({ message, currentUserId }: MessageBubbleProps) => {
             )}
             <div
                 className={cn(
-                    "rounded-lg px-3 py-2 sm:px-4 sm:py-2 shadow-message transition-all duration-200 hover:shadow-lg",
+                    "rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 shadow-message transition-all duration-200 hover:shadow-lg",
                     isOwn
-                        ? "bg-gradient-message text-white ml-1 sm:ml-2"
-                        : "bg-chat-message-bg text-foreground mr-1 sm:mr-2"
+                        ? "bg-gradient-message text-white ml-0.5 sm:ml-1"
+                        : "bg-chat-message-bg text-foreground mr-0.5 sm:mr-1"
                 )}
             >
                 {!isOwn && (
-                    <p className="text-xs font-medium text-primary mb-1">{message.sender.name}</p>
+                    <p className="text-[10px] sm:text-xs font-medium text-primary mb-0.5">{message.sender.name}</p>
                 )}
                 {renderMessageContent()}
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-2 mt-0.5">
                     <p
                         className={cn(
-                            "text-xs opacity-70",
+                            "text-[10px] sm:text-xs opacity-70",
                             isOwn ? "text-white/70" : "text-muted-foreground"
                         )}
                     >
