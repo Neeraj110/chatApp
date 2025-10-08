@@ -43,7 +43,7 @@ const ChatHeader = ({ conversation, isOnline, onBack }: ChatHeaderProps) => {
 
     return (
         <>
-            <div className="flex items-center justify-between p-4 border-b border-border bg-card">
+            <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-border bg-card">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Button
                         onClick={onBack}

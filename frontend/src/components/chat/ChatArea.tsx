@@ -32,7 +32,6 @@ export function ChatArea({ onChange }: ChatAreaProps) {
         ? conversation.participants._id
         : undefined;
 
-
     const isUserOnline = conversationUserId
         ? onlineUsers.includes(conversationUserId)
         : false;
@@ -65,7 +64,6 @@ export function ChatArea({ onChange }: ChatAreaProps) {
             if (newMessage.conversationId === conversation._id) {
                 setMessages((prev) => {
                     if (prev.some((msg) => msg._id === newMessage._id)) {
-
                         return prev;
                     }
                     return [...prev, newMessage];
@@ -119,7 +117,7 @@ export function ChatArea({ onChange }: ChatAreaProps) {
     }
 
     return (
-        <div className="flex-1 flex flex-col h-full bg-background">
+        <div className="flex flex-col h-full bg-background">
             <ChatHeader
                 conversation={conversation}
                 isOnline={isUserOnline}
@@ -128,7 +126,6 @@ export function ChatArea({ onChange }: ChatAreaProps) {
             <div
                 className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
                 ref={messagesContainerRef}
-                style={{ maxHeight: "calc(97vh - 120px)" }}
             >
                 {isLoading ? (
                     <div className="flex items-center justify-center h-full">
