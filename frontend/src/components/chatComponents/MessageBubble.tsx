@@ -2,6 +2,7 @@ import { memo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/types/types";
+import Linkify from "react-linkify";
 
 interface MessageBubbleProps {
     message: Message;
@@ -27,7 +28,17 @@ const MessageBubble = memo(({ message, currentUserId }: MessageBubbleProps) => {
 
     const renderMessageContent = () => {
         if (message.content) {
-            return <p className="text-xs sm:text-sm leading-snug break-words">{message.content}</p>;
+            return (
+                <Linkify
+                    componentDecorator={(decoratedHref, decoratedText, key) => (
+                        <a target="blank" href={decoratedHref} key={key} className="underline text-blue-300 hover:text-blue-100 break-all">
+                            {decoratedText}
+                        </a>
+                    )}
+                >
+                    <p className="text-xs sm:text-sm leading-snug break-words whitespace-pre-wrap">{message.content}</p>
+                </Linkify>
+            );
         }
         else if (message.fileId) {
             const isVideo = message.fileId.endsWith(".mp4") || message.fileId.endsWith(".webm");

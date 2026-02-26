@@ -10,6 +10,9 @@ const MessageInput = ({
     setMessageText,
     handleSendMessage,
     isSending,
+    conversationId,
+    userId,
+    socket,
 }: {
     messageText: string;
     setMessageText: (value: string) => void;
@@ -17,13 +20,33 @@ const MessageInput = ({
     selectedFile: File | null;
     setSelectedFile: (file: File | null) => void;
     isSending: boolean;
+    conversationId: string;
+    userId: string;
+    socket: any;
 }) => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" && !e.shiftKey && !isSending) {
             e.preventDefault();
             handleSendMessage();
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+            socket?.emit("stopTyping", { conversationId, userId });
+        }
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setMessageText(e.target.value);
+
+        if (socket) {
+            socket.emit("typing", { conversationId, userId });
+
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+            typingTimeoutRef.current = setTimeout(() => {
+                socket.emit("stopTyping", { conversationId, userId });
+            }, 2000);
         }
     };
 
@@ -86,7 +109,7 @@ const MessageInput = ({
                     <Input
                         placeholder="Type a message..."
                         value={messageText}
-                        onChange={(e) => setMessageText(e.target.value)}
+                        onChange={handleChange}
                         onKeyDown={handleKeyPress}
                         className="pr-10 sm:pr-12 bg-background text-sm sm:text-base"
                         aria-label="Message input"

@@ -43,7 +43,7 @@ export const sendMessage = asyncHandler(
 
       if (
         !conversation.participants.some((p: mongoose.Types.ObjectId) =>
-          p.equals(userId as mongoose.Types.ObjectId)
+          p.equals(userId as mongoose.Types.ObjectId),
         )
       ) {
         return res.status(403).json({
@@ -101,11 +101,13 @@ export const sendMessage = asyncHandler(
         fileId,
       });
 
-      await message.save();
-
-      await Conversation.findByIdAndUpdate(conversationId, {
-        lastMessage: message._id,
-      });
+      // Save message and update conversation in parallel
+      await Promise.all([
+        message.save(),
+        Conversation.findByIdAndUpdate(conversationId, {
+          lastMessage: message._id,
+        }),
+      ]);
 
       const populatedMessage = await Message.findById(message._id)
         .populate("sender", "name email avatar")
@@ -131,7 +133,7 @@ export const sendMessage = asyncHandler(
           error instanceof Error ? error.message : "Internal server error",
       });
     }
-  }
+  },
 );
 
 export const getMessages = asyncHandler(
@@ -164,7 +166,7 @@ export const getMessages = asyncHandler(
 
       if (
         !conversation.participants.some((p: mongoose.Types.ObjectId) =>
-          p.equals(userId as mongoose.Types.ObjectId)
+          p.equals(userId as mongoose.Types.ObjectId),
         )
       ) {
         return res.status(403).json({
@@ -195,7 +197,7 @@ export const getMessages = asyncHandler(
           error instanceof Error ? error.message : "Internal server error",
       });
     }
-  }
+  },
 );
 
 export const startConversation = asyncHandler(
@@ -208,7 +210,7 @@ export const startConversation = asyncHandler(
         "StartConversation: recipientId =",
         recipientId,
         "userId =",
-        userId
+        userId,
       );
 
       if (!userId) {
@@ -256,7 +258,7 @@ export const startConversation = asyncHandler(
     } catch (error) {
       throw error;
     }
-  }
+  },
 );
 
 export const deleteConversation = asyncHandler(
@@ -292,7 +294,7 @@ export const deleteConversation = asyncHandler(
     } catch (error) {
       throw error;
     }
-  }
+  },
 );
 
 export const getConversations = asyncHandler(
@@ -310,7 +312,7 @@ export const getConversations = asyncHandler(
         participants: userId,
       })
         .select(
-          "participants lastMessage updatedAt isGroup groupName groupAvatar groupAdmin"
+          "participants lastMessage updatedAt isGroup groupName groupAvatar groupAdmin",
         )
         .populate({
           path: "participants",
@@ -345,7 +347,7 @@ export const getConversations = asyncHandler(
           }
 
           const otherParticipants = conversation.participants.filter(
-            (participant) => participant._id.toString() !== userId.toString()
+            (participant) => participant._id.toString() !== userId.toString(),
           );
 
           return {
@@ -355,7 +357,7 @@ export const getConversations = asyncHandler(
             lastMessage: conversation.lastMessage || null,
             updatedAt: conversation.updatedAt,
           };
-        }
+        },
       );
 
       return res.status(200).json({
@@ -370,7 +372,7 @@ export const getConversations = asyncHandler(
         error: error instanceof Error ? error.message : error,
       });
     }
-  }
+  },
 );
 
 export const createGroup = asyncHandler(
@@ -447,7 +449,7 @@ export const createGroup = asyncHandler(
       }
       throw error;
     }
-  }
+  },
 );
 
 export const deleteGroup = asyncHandler(
@@ -493,7 +495,7 @@ export const deleteGroup = asyncHandler(
     } catch (error) {
       throw error;
     }
-  }
+  },
 );
 
 export const addGroupMembers = asyncHandler(
@@ -539,7 +541,7 @@ export const addGroupMembers = asyncHandler(
 
       const newParticipants = participants.filter(
         (p) =>
-          !conversation.participants.includes(new mongoose.Types.ObjectId(p))
+          !conversation.participants.includes(new mongoose.Types.ObjectId(p)),
       );
       if (newParticipants.length === 0) {
         return res.status(400).json({
@@ -549,7 +551,7 @@ export const addGroupMembers = asyncHandler(
       }
 
       conversation.participants.push(
-        ...newParticipants.map((p) => new mongoose.Types.ObjectId(p))
+        ...newParticipants.map((p) => new mongoose.Types.ObjectId(p)),
       );
       await conversation.save();
 
@@ -573,7 +575,7 @@ export const addGroupMembers = asyncHandler(
       }
       throw error;
     }
-  }
+  },
 );
 
 export const removeGroupMembers = asyncHandler(
@@ -625,7 +627,7 @@ export const removeGroupMembers = asyncHandler(
       }
 
       conversation.participants = conversation.participants.filter(
-        (p: { toString: () => string }) => !participants.includes(p.toString())
+        (p: { toString: () => string }) => !participants.includes(p.toString()),
       );
 
       if (conversation.participants.length < 2) {
@@ -640,7 +642,7 @@ export const removeGroupMembers = asyncHandler(
       participants.forEach((participantId) => {
         io.to(participantId.toString()).emit(
           "removedFromGroup",
-          conversationId
+          conversationId,
         );
       });
       io.to(conversationId.toString()).emit("groupUpdated", conversation);
@@ -660,7 +662,7 @@ export const removeGroupMembers = asyncHandler(
       }
       throw error;
     }
-  }
+  },
 );
 
 export const updateGroup = asyncHandler(
@@ -758,7 +760,7 @@ export const updateGroup = asyncHandler(
       }
       throw error;
     }
-  }
+  },
 );
 
 export const leaveGroup = asyncHandler(
@@ -791,7 +793,7 @@ export const leaveGroup = asyncHandler(
           .json({ success: false, message: "User not part of this group" });
       }
       conversation.participants = conversation.participants.filter(
-        (p: { toString: () => string }) => p.toString() !== userId.toString()
+        (p: { toString: () => string }) => p.toString() !== userId.toString(),
       );
       if (conversation.participants.length < 2) {
         await Conversation.findByIdAndDelete(conversationId);
@@ -803,6 +805,11 @@ export const leaveGroup = asyncHandler(
             "You left the group. Group deleted as it had less than 2 members.",
         });
       }
+
+      if (conversation.groupAdmin?.toString() === userId.toString()) {
+        conversation.groupAdmin = conversation.participants[0];
+      }
+
       await conversation.save();
       io.to(conversationId.toString()).emit("groupUpdated", conversation);
       return res.status(200).json({
@@ -813,5 +820,5 @@ export const leaveGroup = asyncHandler(
     } catch (error) {
       throw error;
     }
-  }
+  },
 );

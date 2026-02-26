@@ -32,7 +32,6 @@ const Login = () => {
       setIsLoading(false);
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -55,7 +54,6 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Google login failed:", error);
-      toast.error("Google login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }

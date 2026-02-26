@@ -20,6 +20,7 @@ export function ChatArea({ onChange }: ChatAreaProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [messageText, setMessageText] = useState<string>("");
     const [messages, setMessages] = useState<Message[]>([]);
+    const [typingUserId, setTypingUserId] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const { socket, onlineUsers } = useSocket();
@@ -72,6 +73,15 @@ export function ChatArea({ onChange }: ChatAreaProps) {
         };
 
         socket.on("newMessage", handleNewMessage);
+
+        socket.on("typing", (userId: string) => {
+            if (userId !== user?._id) setTypingUserId(userId);
+        });
+
+        socket.on("stopTyping", (userId: string) => {
+            if (userId !== user?._id) setTypingUserId(null);
+        });
+
         socket.on("connect", () => console.log("Socket connected:", socket.id));
         socket.on("connect_error", (error) => console.error("Socket connection error:", error));
         socket.on("disconnect", (reason) => console.log("Socket disconnected:", reason));
@@ -80,6 +90,8 @@ export function ChatArea({ onChange }: ChatAreaProps) {
             console.log("Leaving conversation:", conversation._id);
             socket.emit("leaveConversation", conversation._id);
             socket.off("newMessage", handleNewMessage);
+            socket.off("typing");
+            socket.off("stopTyping");
             socket.off("connect");
             socket.off("connect_error");
             socket.off("disconnect");
@@ -99,6 +111,9 @@ export function ChatArea({ onChange }: ChatAreaProps) {
             setSelectedFile(null);
 
             await sendMessageMutation.mutateAsync(formData);
+
+            // Stop typing after sending
+            socket?.emit("stopTyping", { conversationId: conversation._id, userId: user?._id });
         } catch (error) {
             console.error("Failed to send message:", error);
         }
@@ -128,8 +143,15 @@ export function ChatArea({ onChange }: ChatAreaProps) {
                 ref={messagesContainerRef}
             >
                 {isLoading ? (
-                    <div className="flex items-center justify-center h-full">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                    <div className="flex flex-col space-y-4 p-4">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                            <div key={i} className={`flex ${i % 2 === 0 ? "justify-end" : "justify-start"}`}>
+                                <div className={`flex items-end gap-2 max-w-[70%] ${i % 2 === 0 ? "flex-row-reverse" : "flex-row"}`}>
+                                    <div className="w-8 h-8 rounded-full bg-muted/50 animate-pulse flex-shrink-0" />
+                                    <div className={`p-3 rounded-lg animate-pulse ${i % 2 === 0 ? "bg-primary/20" : "bg-muted/50"} w-48 h-12`} />
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 ) : isError ? (
                     <div className="text-center text-sm text-destructive">
@@ -151,6 +173,16 @@ export function ChatArea({ onChange }: ChatAreaProps) {
                         />
                     ))
                 )}
+
+                {typingUserId && (
+                    <div className="flex justify-start mb-2">
+                        <div className="bg-muted p-3 rounded-lg flex items-center gap-1 w-16 h-10">
+                            <div className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <div className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <div className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                    </div>
+                )}
                 <div ref={messagesEndRef} className="mb-5" />
             </div>
             <MessageInput
@@ -160,6 +192,9 @@ export function ChatArea({ onChange }: ChatAreaProps) {
                 setMessageText={setMessageText}
                 handleSendMessage={handleSendMessage}
                 isSending={sendMessageMutation.isPending}
+                conversationId={conversation._id}
+                userId={user?._id || ""}
+                socket={socket}
             />
         </div>
     );

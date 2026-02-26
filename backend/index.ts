@@ -8,6 +8,7 @@ import rateLimit from "express-rate-limit";
 import compression from "compression";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
 import { connectDb } from "./config/db";
 import userRoutes from "./routes/userRoutes";
 import messageRoutes from "./routes/messageRoutes";
@@ -39,12 +40,13 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("common"));
 }
 app.use(compression());
+app.use(helmet());
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:3000",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
-  })
+  }),
 );
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
@@ -53,8 +55,8 @@ app.use(cookieParser());
 
 // ✅ Rate limiter
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
   message: "Too many requests from this IP, please try again later.",
 });
 app.use("/api/", limiter);
@@ -80,7 +82,7 @@ io.on("connection", (socket: Socket) => {
   console.log(`User connected: ${socket.id}`);
 
   socket.on("user-join", (userId: string) => {
-    console.log(`User ${userId} joined with socket ${socket.id}`);
+    // console.log(`User ${userId} joined with socket ${socket.id}`);
     connectedUsers.set(userId, socket);
     io.emit("onlineUsers", Array.from(connectedUsers.keys()));
     socket.join(userId);
@@ -89,6 +91,14 @@ io.on("connection", (socket: Socket) => {
   socket.on("joinConversation", (conversationId: string) => {
     console.log(`Socket ${socket.id} joined conversation ${conversationId}`);
     socket.join(conversationId);
+  });
+
+  socket.on("typing", ({ conversationId, userId }) => {
+    socket.to(conversationId).emit("typing", userId);
+  });
+
+  socket.on("stopTyping", ({ conversationId, userId }) => {
+    socket.to(conversationId).emit("stopTyping", userId);
   });
 
   socket.on("disconnect", () => {

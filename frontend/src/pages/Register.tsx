@@ -39,8 +39,7 @@ const Register = () => {
                 setIsLoading(false);
             }
         } catch (error) {
-            console.error("Login error:", error);
-            toast.error("Login failed. Please try again.");
+            console.error("Register error:", error);
         } finally {
             setIsLoading(false);
         }
@@ -64,7 +63,6 @@ const Register = () => {
             }
         } catch (error) {
             console.error("Google login failed:", error);
-            toast.error("Google login failed. Please try again.");
         } finally {
             setIsLoading(false);
         }

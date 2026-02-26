@@ -17,8 +17,8 @@ interface AuthenticatedRequest extends Request {
 
 const options = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
+  secure: true,
+  sameSite: "none" as const,
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
@@ -78,7 +78,7 @@ export const registerUser = asyncHandler(
       }
       throw error;
     }
-  }
+  },
 );
 
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
@@ -109,7 +109,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
       });
     }
 
-    const token = await generateToken(user._id as string);
+    const token = await user.generateAccessToken();
 
     if (!token) {
       return res.status(500).json({
@@ -164,7 +164,7 @@ export const googleLogin = asyncHandler(
         "https://www.googleapis.com/oauth2/v2/userinfo",
         {
           headers: { Authorization: `Bearer ${tokens.access_token}` },
-        }
+        },
       );
 
       const { email, name, picture } = userInfoResponse.data;
@@ -192,7 +192,7 @@ export const googleLogin = asyncHandler(
       console.error("Google login error:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
-  }
+  },
 );
 
 export const getUserProfile = asyncHandler(
@@ -229,7 +229,7 @@ export const getUserProfile = asyncHandler(
     } catch (error) {
       throw error;
     }
-  }
+  },
 );
 
 export const updateUserProfile = asyncHandler(
@@ -295,7 +295,7 @@ export const updateUserProfile = asyncHandler(
 
       throw error;
     }
-  }
+  },
 );
 
 export const updateAvatar = asyncHandler(
@@ -349,7 +349,7 @@ export const updateAvatar = asyncHandler(
       const updatedUser = await User.findByIdAndUpdate(
         userId,
         { avatar: uploadResult.secure_url },
-        { new: true }
+        { new: true },
       );
 
       return res.status(200).json({
@@ -367,7 +367,7 @@ export const updateAvatar = asyncHandler(
     } catch (error) {
       throw error;
     }
-  }
+  },
 );
 
 export const deleteUserAccount = asyncHandler(
@@ -407,7 +407,7 @@ export const deleteUserAccount = asyncHandler(
     } catch (error) {
       throw error;
     }
-  }
+  },
 );
 
 export const logoutUser = asyncHandler(
@@ -427,7 +427,7 @@ export const logoutUser = asyncHandler(
     } catch (error) {
       throw error;
     }
-  }
+  },
 );
 
 export const fetchAllUsers = asyncHandler(
@@ -441,7 +441,7 @@ export const fetchAllUsers = asyncHandler(
         });
       }
       const users = await User.find({ _id: { $ne: userId } }).select(
-        "-password -__v -authType"
+        "-password -__v -authType",
       );
 
       return res.status(200).json({
@@ -452,5 +452,5 @@ export const fetchAllUsers = asyncHandler(
     } catch (error) {
       throw error;
     }
-  }
+  },
 );
