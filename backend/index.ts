@@ -40,7 +40,7 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("common"));
 }
 app.use(compression());
-app.use(helmet());
+// app.use(helmet());
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:3000",
