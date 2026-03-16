@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Info, Phone, Video, ArrowLeft, Users } from "lucide-react";
+import { Info, ArrowLeft, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ConversationWithPopulatedData } from "@/types/types";
 import { getConversationAvatar, getConversationName } from "@/lib/helper";
@@ -94,28 +94,6 @@ const ChatHeader = ({ conversation, isOnline, onBack }: ChatHeaderProps) => {
                 </div>
 
                 <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                    {isSingleChat(conversation) && (
-                        <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-9 w-9 p-0"
-                            aria-label="Start voice call"
-                        >
-                            <Phone className="h-4 w-4" />
-                        </Button>
-                    )}
-
-                    {isSingleChat(conversation) && (
-                        <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-9 w-9 p-0"
-                            aria-label="Start video call"
-                        >
-                            <Video className="h-4 w-4" />
-                        </Button>
-                    )}
-
                     <Button
                         size="sm"
                         variant="ghost"

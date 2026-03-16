@@ -100,7 +100,7 @@ io.on("connection", (socket: Socket) => {
   socket.on("stopTyping", ({ conversationId, userId }) => {
     socket.to(conversationId).emit("stopTyping", userId);
   });
-
+  
   socket.on("disconnect", () => {
     console.log(`User disconnected: ${socket.id}`);
     connectedUsers.forEach((s, userId) => {
